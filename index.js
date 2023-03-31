@@ -5,7 +5,9 @@ import bcrypt from "bcrypt";
 import { validationResult } from "express-validator";
 
 import {registerValidation} from "./validations/auth.js";
-import UserModel from "./models/User.js";
+
+import AUTH_UTILS from "./utils/auth.js";
+import * as UserController from "./controllers/UserController.js";
 
 const app = express();
 const PORT = 3001;
@@ -21,46 +23,11 @@ app.get('/', (req, res) => {
     res.send('He1 o');
 })
 
+app.get('/auth/me', AUTH_UTILS.checkAuth, UserController.getMe)
 
-app.post('/auth/login', (req, res) => {
-  try {
+app.post('/auth/login', UserController.login)
 
-  } catch (err) {
-
-  }
-})
-
-app.post('/auth/register', registerValidation, async (req, res) => {
-  try {
-    const errors = validationResult(req);
-
-    if (!errors.isEmpty()) {
-      return res.status(400).json(errors.array())
-    } else {
-      const password = req.body.password;
-      const key = await bcrypt.genSalt(10);
-      const hash = await bcrypt.hash(password, key);
-
-      const doc = new UserModel({
-        email: req.body.email,
-        fullName: req.body.fullName,
-        avatarUrl: req.body.avatarUrl,
-        passwordHash: hash,
-      });
-
-      const user = await doc.save();
-
-      const token = jwt.sign({_id: user._id}, getSecretKey(), {expiresIn: "30d"});
-
-      let {passwordHash, ...userData} = user._doc
-
-      res.json({...userData, token});
-    }
-  } catch (err) {
-    console.log(err);
-    res.status(500).json(getErrorResponse("error_register", err))
-  }
-})
+app.post('/auth/register', registerValidation, UserController.register)
 
 app.listen(PORT, (err) => {
   if (err) {
@@ -69,19 +36,3 @@ app.listen(PORT, (err) => {
     return console.log('Server run on port = ' + PORT + ". Status: OK (200)");
   }
 })
-
-function getResponse(type, config = {}) {
-  return Object.assign({ type, success: true }, config);
-}
-
-function getErrorResponse(type, config) {
-  return Object.assign({ type, success: false}, config);
-}
-
-function getSecretKey() {
-  return (Math.random() * 100000).toString();
-}
-
-function getUserNameByEmail() {
-  return "Any Full Name";
-}
