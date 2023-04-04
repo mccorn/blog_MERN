@@ -3,6 +3,7 @@ import jwt from "jsonwebtoken";
 import { validationResult } from "express-validator";
 
 import UserModel from "../models/User.js";
+import * as utils from "../utils/common.js";
 
 export const register = async (req, res) => {
   try {
@@ -24,13 +25,13 @@ export const register = async (req, res) => {
 
       const user = await doc.save();
 
-      const token = jwt.sign({ _id: user._id }, getSecretKey(), { expiresIn: "30d" });
+      const token = jwt.sign({ _id: user._id }, utils.getSecretKey(), { expiresIn: "30d" });
 
-      res.json({ ...getUserData.call(user), token });
+      res.json({ ...utils.getUserData.call(user), token });
     }
   } catch (err) {
     console.log(err);
-    res.status(500).json(getErrorResponse("error_register", err))
+    res.status(500).json(utils.getErrorResponse("error_register", err))
   }
 }
 
@@ -39,21 +40,21 @@ export const login = async (req, res) => {
     const user = await UserModel.findOne({ email: req.body.email });
 
     if (!user) {
-      return res.status(404).json(getErrorResponse('error_auth_user'))
+      return res.status(404).json(utils.getErrorResponse('error_auth_user'))
     } else {
       const isValidPass = await bcrypt.compare(req.body.password, user._doc.passwordHash);
 
       if (isValidPass) {
-        const token = jwt.sign({ _id: user._id }, getSecretKey(), { expiresIn: "30d" });
+        const token = jwt.sign({ _id: user._id }, utils.getSecretKey(), { expiresIn: "30d" });
 
         res.json({ ...getUserData.call(user), token });
       } else {
-        return res.status(400).json(getErrorResponse('error_auth_login_or_password'))
+        return res.status(400).json(utils.getErrorResponse('error_auth_login_or_password'))
       }
     }
   } catch (err) {
     console.log(err);
-    res.status(500).json(getErrorResponse("error_auth_server", err))
+    res.status(500).json(utils.getErrorResponse("error_auth_server", err))
   }
 }
 
@@ -68,7 +69,7 @@ export const getMe = async (req, res) => {
     }
   } catch (err) {
     console.log(err);
-    res.status(500).json(getErrorResponse("error_me_server", err))
+    res.status(500).json(getErrorResponse("error_auth_me_server", err))
   }
 }
 
@@ -76,18 +77,6 @@ function getUserData() {
   let { passwordHash, ...userData } = this._doc
 
   return userData
-}
-
-function getErrorResponse(type, config) {
-  return Object.assign({ type, success: false}, config);
-}
-
-function getResponse(type, config = {}) {
-  return Object.assign({ type, success: true }, config);
-}
-
-function getSecretKey() {
-  return 'secret123';
 }
 
 function getUserNameByEmail() {

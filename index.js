@@ -4,7 +4,7 @@ import mongoose from "mongoose";
 import bcrypt from "bcrypt";
 import { validationResult } from "express-validator";
 
-import {registerValidation} from "./validations/auth.js";
+import {loginValidation, registerValidation} from "./validations.js";
 
 import AUTH_UTILS from "./utils/auth.js";
 import * as UserController from "./controllers/UserController.js";
@@ -25,7 +25,7 @@ app.get('/', (req, res) => {
 
 app.get('/auth/me', AUTH_UTILS.checkAuth, UserController.getMe)
 
-app.post('/auth/login', UserController.login)
+app.post('/auth/login', loginValidation, UserController.login)
 
 app.post('/auth/register', registerValidation, UserController.register)
 
