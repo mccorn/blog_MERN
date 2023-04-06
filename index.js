@@ -4,10 +4,11 @@ import mongoose from "mongoose";
 import bcrypt from "bcrypt";
 import { validationResult } from "express-validator";
 
-import {loginValidation, registerValidation} from "./validations.js";
+import {loginValidation, registerValidation, postCreateValidation} from "./validations.js";
 
 import AUTH_UTILS from "./utils/auth.js";
 import * as UserController from "./controllers/UserController.js";
+import * as PostController from "./controllers/PostController.js";
 
 const app = express();
 const PORT = 3001;
@@ -28,6 +29,12 @@ app.get('/auth/me', AUTH_UTILS.checkAuth, UserController.getMe)
 app.post('/auth/login', loginValidation, UserController.login)
 
 app.post('/auth/register', registerValidation, UserController.register)
+
+app.get('/posts', PostController.getAll)
+app.get('/posts/:id', PostController.getOne)
+app.delete('/posts/:id', AUTH_UTILS.checkAuth, PostController.remove)
+app.patch('/posts/:id', AUTH_UTILS.checkAuth, PostController.update)
+app.post('/posts', AUTH_UTILS.checkAuth, postCreateValidation, PostController.create)
 
 app.listen(PORT, (err) => {
   if (err) {

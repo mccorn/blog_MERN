@@ -9,7 +9,7 @@ const AUTH_UTILS = {
       try {
         const decoded = jwt.verify(token, getSecretKey());
 
-        req.userID = decoded._id;
+        req.userId = decoded._id;
         next();
       } catch (err) {
         return res.status(400).json({ message: "Нет доступа" });

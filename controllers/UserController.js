@@ -27,7 +27,7 @@ export const register = async (req, res) => {
 
       const token = jwt.sign({ _id: user._id }, utils.getSecretKey(), { expiresIn: "30d" });
 
-      res.json({ ...utils.getUserData.call(user), token });
+      res.json({ ...getUserData.call(user), token });
     }
   } catch (err) {
     console.log(err);
@@ -60,16 +60,16 @@ export const login = async (req, res) => {
 
 export const getMe = async (req, res) => {
   try {
-    const user = await UserModel.findById(req.userID);
+    const user = await UserModel.findById(req.userId);
 
     if (user) {
       res.json(getUserData.call(user))
     } else {
-      res.status(404).json(getErrorResponse("error_auth_me"));
+      res.status(404).json(utils.getErrorResponse("error_auth_me"));
     }
   } catch (err) {
     console.log(err);
-    res.status(500).json(getErrorResponse("error_auth_me_server", err))
+    res.status(500).json(utils.getErrorResponse("error_auth_me_server", err))
   }
 }
 
@@ -77,8 +77,4 @@ function getUserData() {
   let { passwordHash, ...userData } = this._doc
 
   return userData
-}
-
-function getUserNameByEmail() {
-  return "Any Full Name";
 }
